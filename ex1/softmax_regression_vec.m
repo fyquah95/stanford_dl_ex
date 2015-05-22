@@ -6,7 +6,7 @@ function [f,g] = softmax_regression(theta, X,y)
   %       resize it to an n-by-(num_classes-1) matrix.
   %       Recall that we assume theta(:,num_classes) = 0.
   %
-  %   X - The examples stored in a matrix.  
+  %   X - The examples stored in a matrix.
   %       X(i,j) is the i'th coordinate of the j'th example.
   %   y - The label for each example.  y(j) is the j'th example's label.
   %
@@ -16,17 +16,16 @@ function [f,g] = softmax_regression(theta, X,y)
   % theta is a vector;  need to reshape to n x num_classes.
   theta=reshape(theta, n, []);
   num_classes=size(theta,2)+1;
-  
-  % initialize objective value and gradient.
-  f = 0;
-  g = zeros(size(theta));
+  theta = [ theta zeros(size(theta), 1) ];
+  % Completed parameter initialization
 
-  %
-  % TODO:  Compute the softmax objective function and gradient using vectorized code.
-  %        Store the objective function value in 'f', and the gradient in 'g'.
-  %        Before returning g, make sure you form it back into a vector with g=g(:);
-  %
-%%% YOUR CODE HERE %%%
-  
+  mat = theta' * X;
+  h = exp(mat) ./ repmat(sum(exp(mat)), num_classes, 1);
+  f = -sum(log(h(sub2ind(size(h), y, 1:m))));
+
+  y_filter = zeros(num_classes, m);
+  y_filter(sub2ind(size(y_filter), y, 1:m)) = 1;
+
+  g = -1 * X * (y_filter - h)';
+  g = g(:, 1:num_classes - 1);
   g=g(:); % make gradient a vector for minFunc
-

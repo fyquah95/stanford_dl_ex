@@ -75,6 +75,11 @@ predicted_prices = theta'*test.X;
 test_rms=sqrt(mean((predicted_prices - actual_prices).^2));
 fprintf('RMS testing error: %f\n', test_rms);
 
+% Compute the average error
+average_error = grad_check(@(t) linear_regression(t, train.X, train.y) , theta, 10);
+fprintf('Verifying that linear_regression function working as expected');
+fprintf('Average error: %15g\n', average_error);
+
 
 % Plot predictions on test data.
 plot_prices=true;

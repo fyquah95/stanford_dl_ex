@@ -44,8 +44,7 @@ end;
 %%% YOUR CODE HERE %%%
 y_map = zeros(ei.output_dim, m);
 y_map(sub2ind(size(y_map), labels', 1:m)) = 1;
-cost = -1 / m * sum(y_map .* log(hAct{numLayers}));
-% cost = -1 / m * sum(log(hAct{numLayers}(sub2ind(size(hAct{numLayers}), labels' , 1:m))));
+cost = -1 / m * sum(log(hAct{numLayers}(sub2ind(size(hAct{numLayers}), labels' , 1:m))));
 
 %% compute gradients using backpropagation
 %%% YOUR CODE HERE %%%

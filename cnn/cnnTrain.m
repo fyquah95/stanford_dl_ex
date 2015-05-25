@@ -2,10 +2,10 @@
 
 %  Instructions
 %  ------------
-% 
+%
 %  This file contains code that helps you get started in building a single.
 %  layer convolutional nerual network. In this exercise, you will only
-%  need to modify cnnCost.m and cnnminFuncSGD.m. You will not need to 
+%  need to modify cnnCost.m and cnnminFuncSGD.m. You will not need to
 %  modify this file.
 
 %%======================================================================
@@ -50,27 +50,27 @@ if DEBUG
     db_labels = labels(1:10);
     db_theta = cnnInitParams(imageDim,db_filterDim,db_numFilters,...
                 db_poolDim,numClasses);
-    
+
     [cost grad] = cnnCost(db_theta,db_images,db_labels,numClasses,...
                                 db_filterDim,db_numFilters,db_poolDim);
-    
+
 
     % Check gradients
     numGrad = computeNumericalGradient( @(x) cnnCost(x,db_images,...
                                 db_labels,numClasses,db_filterDim,...
                                 db_numFilters,db_poolDim), db_theta);
- 
+
     % Use this to visually compare the gradients side by side
     disp([numGrad grad]);
-    
+
     diff = norm(numGrad-grad)/norm(numGrad+grad);
-    % Should be small. In our implementation, these values are usually 
+    % Should be small. In our implementation, these values are usually
     % less than 1e-9.
-    disp(diff); 
- 
+    disp(diff);
+
     assert(diff < 1e-9,...
         'Difference too large. Check your gradient computation again');
-    
+
 end;
 
 %%======================================================================

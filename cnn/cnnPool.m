@@ -31,15 +31,15 @@ pooledFeatures = zeros(convolvedDim / poolDim, ...
 
 %%% YOUR CODE HERE %%%
 
-poolFilter = ones(poolDim)  / (poolDim * poolDim);
+poolFilter = ones(poolDim);
 
 for filterNum = 1:numFilters
-  for imageNum = 1:imageNum
+  for imageNum = 1:numImages
 
     features = squeeze(convolvedFeatures(:, :, filterNum, imageNum));
-    pooled = conv2(features, poolFilter, 'valid')(1:poolDim:end, 1:poolDim:end);
+    pooled = conv2(features, poolFilter, 'valid')(1:poolDim:end, 1:poolDim:end) ./ (poolDim * poolDim);
 
-    pooledFeatures(:, :, numFilters, numImages) = pooled;
+    pooledFeatures(:, :, filterNum, imageNum) = pooled;
   end
 end
 

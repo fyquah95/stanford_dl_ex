@@ -11,7 +11,7 @@
 %%======================================================================
 %% STEP 0: Initialize Parameters and Load Data
 %  Here we initialize some parameters used for the exercise.
-
+programStartTime = time();
 % Configuration
 imageDim = 28;
 numClasses = 10;  % Number of classes (MNIST images fall into 10 classes)
@@ -102,3 +102,5 @@ acc = sum(preds==testLabels)/length(preds);
 
 % Accuracy should be around 97.4% after 3 epochs
 fprintf('Accuracy is %f\n',acc);
+programEndTime = time();
+fprintf('Program ran for %f\n', programEndTime - programStartTime);

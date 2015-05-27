@@ -136,20 +136,17 @@ deltaHidden = Wd' * deltaZ;
 deltaHidden = reshape(deltaHidden, outputDim, outputDim, numFilters, numImages);
 deltaConv = zeros(convDim, convDim, numFilters, numImages);
 Wc_grad_temp = zeros(filterDim, filterDim, numFilters, numImages);
+unpoolingFilter = 1 / (poolDim ^ 2) * ones(poolDim);
 
-for filterNum =1:numFilters
+parfor filterNum =1:numFilters
     for imageNum = 1:numImages
 
-        deltaConv(:, :, filterNum, imageNum) = 1 / (poolDim ^ 2) ...
-          * kron(deltaHidden(:, :, filterNum, imageNum), ones(poolDim)) ...
-          .* (activations(:, :, filterNum, imageNum)) ...
-          .* (1 - activations(:, :, filterNum, imageNum));
-
-        Wc_grad_temp(:, :, filterNum, imageNum) = conv2(images(:, :, imageNum), ...
-          rot90(deltaConv(:, :, filterNum, imageNum), 2), "valid");
-
+        deltaConv(:, :, filterNum, imageNum) = ...
+          kron(deltaHidden(:, :, filterNum, imageNum), unpoolingFilter);
     end
 end
+
+deltaConv = deltaConv .* activations .* (1 - activations);
 
 %%======================================================================
 %% STEP 1d: Gradient Calculation
@@ -160,6 +157,14 @@ end
 %  for that filter with each image and aggregate over images.
 
 %%% YOUR CODE HERE %%%
+
+parfor filterNum = 1:numFilters
+    for imageNum = 1:numImages
+        Wc_grad_temp(:, :, filterNum, imageNum) = conv2(images(:, :, imageNum), ...
+          rot90(deltaConv(:, :, filterNum, imageNum), 2), "valid");
+
+    end
+end
 
 Wd_grad = 1 / numImages * deltaZ * activationsPooled';
 bd_grad = 1 / numImages * sum(deltaZ, 2);

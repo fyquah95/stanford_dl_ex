@@ -8,3 +8,10 @@ epsilon = 1e-4;
 % z is the ZCA transformed data. The dimenison of z = x.
 
 %%% YOUR CODE HERE %%%
+m = size(x, 2);
+% Solve some linear algebra
+sigma = 1 / m * x * x';
+[ U, S, V ] = svd(sigma);
+
+% Calculate value of ZCA-Whittened image
+Z = U * (diag(1 ./ sqrt(diag(S) + epsilon))) * U' * x;

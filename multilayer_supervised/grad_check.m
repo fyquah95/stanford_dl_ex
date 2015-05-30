@@ -1,5 +1,7 @@
 function average_error = grad_check(fun, theta0, num_checks, varargin)
 
+  pkg load statistics;
+
   delta=1e-6;
   sum_error=0;
 

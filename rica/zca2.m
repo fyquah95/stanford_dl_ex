@@ -10,6 +10,10 @@ epsilon = 1e-4;
 %%% YOUR CODE HERE %%%
 m = size(x, 2);
 % Solve some linear algebra
+% Note : the below computes covarience matrix
+% with the assumption that the mean is zero
+% Hence, normalization has to be done before hand (which is)
+
 sigma = 1 / m * x * x';
 [ U, S, V ] = svd(sigma);
 

@@ -2,15 +2,15 @@
 
 %  Instructions
 %  ------------
-% 
+%
 %  This file contains code that helps you get started on the
 %  self-taught learning. You will need to complete code in feedForwardAutoencoder.m
-%  You will also need to have implemented sparseAutoencoderCost.m and 
+%  You will also need to have implemented sparseAutoencoderCost.m and
 %  softmaxCost.m from previous exercises.
 %
 %% ======================================================================
 %  STEP 0: Here we provide the relevant parameters values that will
-%  allow your RICA to get good filters; you do not need to 
+%  allow your RICA to get good filters; you do not need to
 %  change the parameters below.
 addpath(genpath('..'))
 imgSize = 28;
@@ -19,7 +19,7 @@ params.patchWidth=9;           % width of a patch
 params.n=params.patchWidth^2;   % dimensionality of input to RICA
 params.lambda = 0.0005;   % sparsity cost
 params.numFeatures = 32; % number of filter banks to learn
-params.epsilon = 1e-2;   
+params.epsilon = 1e-2;
 
 %% ======================================================================
 %  STEP 1: Load data from the MNIST database
@@ -65,11 +65,11 @@ fprintf('# examples in supervised testing set: %d\n\n', size(testData, 2));
 
 %% ======================================================================
 %  STEP 2: Train the RICA
-%  This trains the RICA on the unlabeled training images. 
+%  This trains the RICA on the unlabeled training images.
 
 %  Randomly initialize the parameters
 randTheta = randn(params.numFeatures,params.n)*0.01;  % 1/sqrt(params.n);
-randTheta = randTheta ./ repmat(sqrt(sum(randTheta.^2,2)), 1, size(randTheta,2)); 
+randTheta = randTheta ./ repmat(sqrt(sum(randTheta.^2,2)), 1, size(randTheta,2));
 randTheta = randTheta(:);
 
 % subsample random patches from the unlabelled+training data
@@ -79,13 +79,16 @@ patches = samplePatches([unlabeledData,trainData],params.patchWidth,200000);
 options.Method = 'lbfgs';
 options.MaxFunEvals = Inf;
 options.MaxIter = 1000;
-% You'll need to replace this line with RICA training code
-opttheta = randTheta;
 
 %  Find opttheta by running the RICA on all the training patches.
-%  You will need to whitened the patches with the zca2 function 
+%  You will need to whitened the patches with the zca2 function
 %  then call minFunc with the softICACost function as seen in the RICA exercise.
 %%% YOUR CODE HERE %%%
+V = zca2(patches);
+a = sqrt(sum(V.^2) + (1e-8));
+x = bsxfunwrap(@rdivide,V,a);
+
+opttheta = minFunc(@(theta) softICACost(theta, x, params), randTheta, options);
 
 % reshape visualize weights
 W = reshape(opttheta, params.numFeatures, params.n);
@@ -97,7 +100,7 @@ display_network(W');
 % pre-multiply the weights with whitening matrix, equivalent to whitening
 % each image patch before applying convolution. V should be the same V
 % returned by the zca2 when you whiten the patches.
-W = W*V;
+% W = W*V;
 %  reshape RICA weights to be convolutional weights.
 W = reshape(W, params.numFeatures, params.patchWidth, params.patchWidth);
 W = permute(W, [2,3,1]);
@@ -109,7 +112,7 @@ numFilters = params.numFeatures;
 trainImages=reshape(trainData, imgSize, imgSize, size(trainData, 2));
 testImages=reshape(testData, imgSize, imgSize, size(testData, 2));
 %  Compute convolutional responses
-%  TODO: You will need to complete feedfowardRICA.m 
+%  TODO: You will need to complete feedfowardRICA.m
 trainAct = feedfowardRICA(filterDim, poolDim, numFilters, trainImages, W);
 testAct = feedfowardRICA(filterDim, poolDim, numFilters, testImages, W);
 %  reshape the responses into feature vectors
@@ -121,30 +124,36 @@ testFeatures = reshape(testAct, featureSize, size(testData, 2));
 
 numClasses  = 5; % doing 5-class digit recognition
 % initialize softmax weights randomly
-randTheta2 = randn(numClasses, featureSize)*0.01;  % 1/sqrt(params.n);
-randTheta2 = randTheta2 ./ repmat(sqrt(sum(randTheta2.^2,2)), 1, size(randTheta2,2)); 
+randTheta2 = randn(numClasses - 1, featureSize)*0.01;  % 1/sqrt(params.n);
+randTheta2 = randTheta2 ./ repmat(sqrt(sum(randTheta2.^2,2)), 1, size(randTheta2,2));
 randTheta2 = randTheta2';
 randTheta2 = randTheta2(:);
 
-%  Use minFunc and softmax_regression_vec from the previous exercise to 
-%  train a multi-class classifier. 
+%  Use minFunc and softmax_regression_vec from the previous exercise to
+%  train a multi-class classifier.
 options.Method = 'lbfgs';
 options.MaxFunEvals = Inf;
 options.MaxIter = 300;
 
 % optimize
 %%% YOUR CODE HERE %%%
-
-
+softMaxTheta = zeros(featureSize, numClasses - 1);
+tic;
+softMaxTheta(:) = minFunc(@softmax_regression_vec, randTheta2, options, trainFeatures, trainLabels);
+softMaxTheta=[softMaxTheta, zeros(featureSize,1)]; % expand theta to include the last class.
+fprintf("Gradient descent optimization took", toc);
+tic;
 %%======================================================================
-%% STEP 5: Testing 
+%% STEP 5: Testing
 % Compute Predictions on tran and test sets using softmaxPredict
 % and softmaxModel
-%%% YOUR CODE HERE %%%
+
+train_pred = predict(softMaxTheta, trainFeatures);
+pred = predict(softMaxTheta, testFeatures);
+
 % Classification Score
 fprintf('Train Accuracy: %f%%\n', 100*mean(train_pred(:) == trainLabels(:)));
 fprintf('Test Accuracy: %f%%\n', 100*mean(pred(:) == testLabels(:)));
 % You should get 100% train accuracy and ~99% test accuracy. With random
 % convolutional weights we get 97.5% test accuracy. Actual results may
 % vary as a result of random initializations
-
